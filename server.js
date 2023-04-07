@@ -5,7 +5,7 @@ const myDB = require('./connection');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
 //setup passport
 const session = require('express-session');
-const passport = require('passport')
+const passport = require('passport');
 
 const app = express();
 app.set('view engine', 'pug');
