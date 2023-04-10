@@ -8,28 +8,33 @@ const session = require('express-session');
 const passport = require('passport');
 const { ObjectID } = require('mongodb');
 // Authentication strategy
-const LocalStrategy = require('passport-local');
-const { use } = require('passport');
+// const LocalStrategy = require('passport-local');
+// const { use } = require('passport');
 
 
 const app = express();
+
 app.set('view engine', 'pug');
 app.set('views', './views/pug');
 
-fccTesting(app); //For FCC testing purposes
-app.use('/public', express.static(process.cwd() + '/public'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: true,
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+
 app.use(passport.initialize());
-app.use(passport.session())
+app.use(passport.session());
+
+fccTesting(app); //For FCC testing purposes
+app.use('/public', express.static(process.cwd() + '/public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
+
+/*
 passport.use(new LocalStrategy((username, password, done) => {
   myDataBase.findOne({ username: username }, (err, user) => {
     console.log(`User ${username} attempted to log in.`);
@@ -39,6 +44,7 @@ passport.use(new LocalStrategy((username, password, done) => {
     return done(null, user);
   });
 }));
+*/
 
 
 myDB(async client => {
@@ -64,7 +70,7 @@ myDB(async client => {
   });
 }).catch(e => {
   app.route('/').get((req, res) => {
-    res.render('index', { title:e, message: 'Unable to connect to Database' })
+    res.render('index', { title: e, message: 'Unable to connect to Database' })
   });
 });
 
