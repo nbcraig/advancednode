@@ -8,8 +8,8 @@ const session = require('express-session');
 const passport = require('passport');
 const { ObjectID } = require('mongodb');
 // Authentication strategy
-// const LocalStrategy = require('passport-local');
-// const { use } = require('passport');
+const LocalStrategy = require('passport-local');
+const { use } = require('passport');
 
 
 const app = express();
@@ -32,9 +32,6 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
-/*
 passport.use(new LocalStrategy((username, password, done) => {
   myDataBase.findOne({ username: username }, (err, user) => {
     console.log(`User ${username} attempted to log in.`);
@@ -44,8 +41,6 @@ passport.use(new LocalStrategy((username, password, done) => {
     return done(null, user);
   });
 }));
-*/
-
 
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
