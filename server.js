@@ -44,7 +44,7 @@ passport.use(new LocalStrategy((username, password, done) => {
 
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
-
+  console.log('Connected to DB')
   app.route('/').get((req, res) => {
     res.render('index.pug', { 
       title: 'Connected to Database', 
@@ -66,6 +66,7 @@ myDB(async client => {
 }).catch(e => {
   app.route('/').get((req, res) => {
     res.render('index', { title: e, message: 'Unable to connect to Database' })
+    console.log('DB connection failed')
   });
 });
 
