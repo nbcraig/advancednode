@@ -8,7 +8,6 @@ const passport = require('passport');
 const routes = require('./routes.js');
 const auth = require('./auth.js');
 
-
 const app = express();
 
 const http = require('http').createServer(app);
@@ -18,7 +17,6 @@ const cookieParser = require('cookie-parser');
 const MongoStore = require('connect-mongo')(session);
 const URI = process.env.MONGO_URI;
 const store = new MongoStore({ url: URI });
-
 
 app.set('view engine', 'pug');
 app.set('views', './views/pug');
@@ -58,24 +56,31 @@ myDB(async client => {
   auth(app, myDataBase);
 
   let currentUsers = 0;
-  io.on('connection', socket => {
+  io.on('connection', (socket) => {
     ++currentUsers;
-    io.emit('user count', currentUsers);
-    console.log('user ' + socket.request.user.username + ' connected');
-
+    io.emit('user', {
+      username: socket.request.user.username,
+      currentUsers,
+      connected: true
+    });
+    console.log('A user has connected');
     socket.on('disconnect', () => {
-      /*anything you want to do on disconnect*/
       console.log('A user has disconnected');
       --currentUsers;
-      io.emit('user count', currentUsers)
+      io.emit('user', {
+        username: socket.request.user.username,
+        currentUsers,
+        connected: false
+      });
     });
   });
+  
 }).catch(e => {
   app.route('/').get((req, res) => {
     res.render('index', { title: e, message: 'Unable to connect to database' });
   });
 });
-  
+
 function onAuthorizeSuccess(data, accept) {
   console.log('successful connection to socket.io');
 
@@ -87,7 +92,7 @@ function onAuthorizeFail(data, message, error, accept) {
   console.log('failed connection to socket.io:', message);
   accept(null, false);
 }
-
+  
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
