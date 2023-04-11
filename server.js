@@ -3,14 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const myDB = require('./connection');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
-// Setup passport
 const session = require('express-session');
 const passport = require('passport');
-const { ObjectID } = require('mongodb');
-// Authentication strategy
-const LocalStrategy = require('passport-local');
-const { use } = require('passport');
-
+const routes = require('./routes.js');
+const auth = require('./auth.js');
 
 const app = express();
 
@@ -27,50 +23,23 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-fccTesting(app); //For FCC testing purposes
+fccTesting(app); // For fCC testing purposes
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-passport.use(new LocalStrategy((username, password, done) => {
-  myDataBase.findOne({ username: username }, (err, user) => {
-    console.log(`User ${username} attempted to log in.`);
-    if (err) return done(err);
-    if (!user) return done(null, false);
-    if (password !== user.password) return done(null, false);
-    return done(null, user);
-  });
-}));
-
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
-  console.log('Connected to DB')
-  app.route('/').get((req, res) => {
-    res.render('index.pug', { 
-      title: 'Connected to Database', 
-      message: 'Please login'
-    })
-  });
-  
-  // Serialization of the User object
-  passport.serializeUser((user, done) => {
-    done(null, user._id);
-  });
-  
-  // Deserialization of the User object
-  passport.deserializeUser((id, done) => {
-    myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
-      done(null, doc);
-    });
-  });
+
+  routes(app, myDataBase);
+  auth(app, myDataBase);
 }).catch(e => {
   app.route('/').get((req, res) => {
-    res.render('index', { title: e, message: 'Unable to connect to Database' })
-    console.log('DB connection failed')
+    res.render('index', { title: e, message: 'Unable to connect to database' });
   });
 });
-
+  
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log('Listening on port ' + PORT);
+  console.log(`Listening on port ${PORT}`);
 });
